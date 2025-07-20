@@ -1,0 +1,85 @@
+#include <Wire.h>
+#include <Adafruit_INA219.h>
+
+#define NUM_FEATURES 3
+#define NUM_SUPPORT_VECTORS 5
+
+// Predefined parameters for the SVM model
+float gamma_value = 1.0 / 3.0;           // gamma parameter for the RBF kernel
+float intercept = 1895.91;               // intercept (bias term)
+
+// Support vectors (Voltage, Current, Power)
+float support_vectors[NUM_SUPPORT_VECTORS][NUM_FEATURES] = {
+  {1.29, 13.24, 2.54e-21},
+  {0.99, 6.68,  2.54e-21},
+  {-1.08, -1.14, 2.54e-21},
+  {1.96, -0.91, 2.54e-21},
+  {0.55, -0.96, 2.54e-21}
+};
+
+// Dual coefficients (all set to 1 for simplicity)
+float dual_coef[NUM_SUPPORT_VECTORS] = {1, 1, 1, 1, 1};
+
+// Initialize INA219 sensor
+Adafruit_INA219 ina219;
+
+// RBF kernel function
+float rbf_kernel(float x1[NUM_FEATURES], float x2[NUM_FEATURES]) {
+  float sum = 0;
+  for (int i = 0; i < NUM_FEATURES; i++) {
+    float diff = x1[i] - x2[i];
+    sum += diff * diff;
+  }
+  return exp(-gamma_value * sum);  // Use gamma_value instead of gamma
+}
+
+// SVM Predict function
+int svm_predict(float input[NUM_FEATURES]) {
+  float result = 0;
+  for (int i = 0; i < NUM_SUPPORT_VECTORS; i++) {
+    result += dual_coef[i] * rbf_kernel(input, support_vectors[i]);
+  }
+  result += intercept;
+  return (result >= 0) ? 1 : -1;  // 1 = normal, -1 = anomaly
+}
+
+// Pin Definitions using GPIO numbers for ESP8266 (D5 -> GPIO14)
+const int PWM_PIN = 14;  // D5 is GPIO14 on ESP8266
+
+void setup() {
+  Serial.begin(9600);
+  ina219.begin();  // Initialize INA219 sensor
+ 
+  // Set PWM pin as output (using GPIO14, which corresponds to D5)
+  pinMode(PWM_PIN, OUTPUT);
+}
+
+void loop() {
+  // Get voltage and current values from INA219
+  float voltage = ina219.getBusVoltage_V();
+  float current = ina219.getCurrent_mA() / 1000.0;  // Convert to Amps
+  float power = voltage * current;  // Calculate power
+
+  // Create input array for SVM
+  float input[3] = {voltage, current, power};
+
+  // Predict if the condition is normal or anomalous
+  int result = svm_predict(input);
+ 
+  // Print the result
+  if (result == 1) {
+    Serial.println("Normal");
+    analogWrite(PWM_PIN, 512);  // Adjust PWM for normal frequency
+  } else {
+    Serial.println("Anomaly");
+    analogWrite(PWM_PIN, 768);  // Adjust PWM for anomaly frequency
+  }
+
+  delay(1000);
+}
+
+
+Add closed-loop control code
+
+
+
