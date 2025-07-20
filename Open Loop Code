@@ -1,0 +1,60 @@
+// Define GPIO pins for SRM phase drivers
+const int PHASE_A_HIGH = 5;   // D1 - GPIO5
+const int PHASE_A_LOW  = 4;   // D2 - GPIO4
+const int PHASE_B_HIGH = 14;  // D5 - GPIO14
+const int PHASE_B_LOW  = 12;  // D6 - GPIO12
+const int PHASE_C_HIGH = 13;  // D7 - GPIO13
+const int PHASE_C_LOW  = 15;  // D8 - GPIO15
+
+// Define timing
+const int ON_TIME = 500;      // ON duration in milliseconds
+const int OFF_TIME = 100;     // OFF/Dead time between phases
+
+void setup() {
+  // Set all phase control pins as outputs
+  pinMode(PHASE_A_HIGH, OUTPUT);
+  pinMode(PHASE_A_LOW, OUTPUT);
+  pinMode(PHASE_B_HIGH, OUTPUT);
+  pinMode(PHASE_B_LOW, OUTPUT);
+  pinMode(PHASE_C_HIGH, OUTPUT);
+  pinMode(PHASE_C_LOW, OUTPUT);
+
+  // Initially all phases off
+  turnOffAllPhases();
+}
+
+void loop() {
+  // Phase A ON
+  digitalWrite(PHASE_A_HIGH, HIGH);
+  digitalWrite(PHASE_A_LOW, HIGH);
+  delay(ON_TIME);
+  turnOffAllPhases();
+  delay(OFF_TIME);  // Delay between phase switching
+
+  // Phase B ON
+  digitalWrite(PHASE_B_HIGH, HIGH);
+  digitalWrite(PHASE_B_LOW, HIGH);
+  delay(ON_TIME);
+  turnOffAllPhases();
+  delay(OFF_TIME);
+
+  // Phase C ON
+  digitalWrite(PHASE_C_HIGH, HIGH);
+  digitalWrite(PHASE_C_LOW, HIGH);
+  delay(ON_TIME);
+  turnOffAllPhases();
+  delay(OFF_TIME);
+}
+
+void turnOffAllPhases() {
+  digitalWrite(PHASE_A_HIGH, LOW);
+  digitalWrite(PHASE_A_LOW, LOW);
+  digitalWrite(PHASE_B_HIGH, LOW);
+  digitalWrite(PHASE_B_LOW, LOW);
+  digitalWrite(PHASE_C_HIGH, LOW);
+  digitalWrite(PHASE_C_LOW, LOW);
+}
+
+
+
+Add open-loop control code
